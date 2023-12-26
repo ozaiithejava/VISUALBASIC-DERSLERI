@@ -1,35 +1,31 @@
-' YamlDotNet kütüphanesini kullanabilmek için import ekleyin
-Imports YamlDotNet.Serialization
-Imports System.IO
+' ServiceStack.Redis kütüphanesini kullanabilmek için import ekleyin
+Imports ServiceStack.Redis
 
 Module Program
     Sub Main()
-        ' YAML dosyasını okuma
-        Dim yamlFilePath As String = "C:\Temp\config.yaml"
+        ' Redis bağlantı bilgilerini belirtin
+        Dim redisHost As String = "localhost"
+        Dim redisPort As Integer = 6379
 
-        If File.Exists(yamlFilePath) Then
-            Dim deserializer As New Deserializer()
-            Dim yamlContent As String = File.ReadAllText(yamlFilePath)
+        ' Redis bağlantısını oluşturun
+        Dim redisManager As New RedisManagerPool($"{redisHost}:{redisPort}")
 
-            ' YAML içeriğini bir nesneye dönüştürme
-            Dim data As Object = deserializer.Deserialize(New StringReader(yamlContent))
+        ' Redis client oluşturun
+        Using redisClient As IRedisClient = redisManager.GetClient()
+            ' String (tek bir değer) yazma
+            redisClient.Set("myKey", "Hello, Redis!")
 
-            ' Veriyi kullanma
-            Console.WriteLine("Server IP: " & data("server")("ip"))
-            Console.WriteLine("Database Name: " & data("database")("name"))
+            ' String değeri okuma
+            Dim value As String = redisClient.Get(Of String)("myKey")
+            Console.WriteLine("myKey: " & value)
 
-            ' YAML içeriğini nesne olarak değiştirme
-            data("users")(0)("name") = "Charlie"
+            ' Liste (list) yazma
+            redisClient.AddItemToList("myList", "Item1")
+            redisClient.AddItemToList("myList", "Item2")
 
-            ' YAML dosyasına yazma
-            Dim serializer As New SerializerBuilder().Build()
-            Dim updatedYamlContent As String = serializer.Serialize(data)
-
-            File.WriteAllText(yamlFilePath, updatedYamlContent)
-
-            Console.WriteLine("YAML dosyası güncellendi.")
-        Else
-            Console.WriteLine("YAML dosyası bulunamadı.")
-        End If
+            ' Liste değerini okuma
+            Dim listItems As List(Of String) = redisClient.GetAllItemsFromList("myList")
+            Console.WriteLine("myList: " & String.Join(", ", listItems))
+        End Using
     End Sub
 End Module
