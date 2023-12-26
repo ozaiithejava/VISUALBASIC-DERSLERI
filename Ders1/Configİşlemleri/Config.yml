@@ -1,0 +1,16 @@
+# Bu bir YAML dosyası örneğidir
+
+server:
+  ip: 192.168.1.1
+  port: 8080
+
+database:
+  name: my_database
+  user: admin
+  password: secret
+
+users:
+  - name: Alice
+    age: 30
+  - name: Bob
+    age: 25
